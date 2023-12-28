@@ -1,6 +1,3 @@
-Certainly! Here's the raw Markdown content for the `README.md` file for your PyAIVidGen GitHub repository:
-
-```markdown
 # PyAIVidGen
 
 PyAIVidGen is a Python command-line tool designed to automate the creation of YouTube videos using OpenAI's APIs. This tool leverages the power of AI to transform texts into voice narrations, integrates background music, and utilizes OpenAI's DALL-E API to generate relevant images, culminating in a complete video package.
@@ -70,6 +67,3 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 Note: This tool is in its early stages of development and may undergo significant changes. Feedback and contributions are highly appreciated.
-```
-
-You can copy this content into your `README.md` file. Adjust any parts as necessary to better fit your project's specifics.
