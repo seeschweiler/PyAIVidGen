@@ -46,7 +46,8 @@ def generate_text_with_openai():
         return None
 
 def save_generated_text(text):
-    with open('text_output.txt', 'w') as file:
+    text_output_file = settings.get('text_output_file', 'text_output.txt')
+    with open(text_output_file, 'w') as file:
         file.write(text)
 
 def ask_user_for_text_generation():
@@ -62,7 +63,7 @@ def main(args):
             generated_text = generate_text_with_openai()
             if generated_text:
                 save_generated_text(generated_text)
-                args.text_file = 'text_output.txt'
+                args.text_file = settings.get('text_output_file', 'text_output.txt')
         else:
             print("Text generation skipped.")
             return  # Or handle this case as needed
