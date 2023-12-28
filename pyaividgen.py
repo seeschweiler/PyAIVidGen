@@ -54,9 +54,16 @@ def ask_user_for_text_generation():
     response = input("Do you want to generate text? [Y/n]: ").strip().lower()
     return response in ['', 'y', 'yes']
 
+def ask_user_for_text_to_speech_transformation():
+    response = input("Do you want to proceed with Text-to-Speech transformation? [Y/n]: ").strip().lower()
+    return response in ['', 'y', 'yes']
+
 def main(args):
+    text_file_available = False
+
     if args.text_file:
         print_green_bold("Using provided text file.")
+        text_file_available = True
     else:
         if ask_user_for_text_generation():
             print_green_bold("Generating text using OpenAI.")
@@ -64,9 +71,16 @@ def main(args):
             if generated_text:
                 save_generated_text(generated_text)
                 args.text_file = settings.get('text_output_file', 'text_output.txt')
+                text_file_available = True
         else:
             print("Text generation skipped.")
-            return  # Or handle this case as needed
+
+    if text_file_available:
+        if ask_user_for_text_to_speech_transformation():
+            print_green_bold("Text-to-Speech transformation selected. Implement transformation logic here.")
+            # Implement Text-to-Speech transformation logic here
+        else:
+            print("Text-to-Speech transformation skipped.")
 
     # Rest of your main function logic
 
