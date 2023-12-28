@@ -70,7 +70,7 @@ def main(args):
     # Rest of your main function logic
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='PyAIVidGen: A tool to generate YouTube videos using OpenAI APIs')
+    parser = argparse.ArgumentParser(description='PyAIVidGen: A tool to generate YouTube videos using AI')
 
     parser.add_argument('-t', '--text-file', type=str, help='Path to the text file (txt) for voice conversion', required=False)
     parser.add_argument('-m', '--music-file', type=str, help='Path to the background music file (mp3)', default=settings.get('default_music_file'))
