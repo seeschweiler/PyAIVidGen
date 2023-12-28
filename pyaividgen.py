@@ -1,5 +1,6 @@
 import argparse
 import os
+import json
 from openai import OpenAI
 import colorama
 from colorama import Fore, Style
@@ -18,7 +19,20 @@ client = OpenAI(api_key=openai_api_key)
 def print_green_bold(text):
     print(Fore.GREEN + Style.BRIGHT + text + Style.RESET_ALL)
 
-def generate_text_with_openai(user_message):
+def read_settings():
+    try:
+        with open('settings.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print("settings.json file not found.")
+        return None
+
+settings = read_settings()
+if settings is None:
+    exit(1)
+
+def generate_text_with_openai():
+    user_message = settings.get('user_message', '')
     try:
         response = client.chat.completions.create(model="gpt-4",
         messages=[
@@ -29,14 +43,6 @@ def generate_text_with_openai(user_message):
         return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"Error while generating text with OpenAI: {e}")
-        return None
-
-def read_user_message():
-    try:
-        with open('user_message.txt', 'r') as file:
-            return file.read().strip()
-    except FileNotFoundError:
-        print("user_message.txt file not found.")
         return None
 
 def save_generated_text(text):
@@ -53,12 +59,10 @@ def main(args):
     else:
         if ask_user_for_text_generation():
             print_green_bold("Generating text using OpenAI.")
-            user_message = read_user_message()
-            if user_message:
-                generated_text = generate_text_with_openai(user_message)
-                if generated_text:
-                    save_generated_text(generated_text)
-                    args.text_file = 'text_output.txt'
+            generated_text = generate_text_with_openai()
+            if generated_text:
+                save_generated_text(generated_text)
+                args.text_file = 'text_output.txt'
         else:
             print("Text generation skipped.")
             return  # Or handle this case as needed
@@ -69,9 +73,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyAIVidGen: A tool to generate YouTube videos using OpenAI APIs')
 
     parser.add_argument('-t', '--text-file', type=str, help='Path to the text file (txt) for voice conversion', required=False)
-    parser.add_argument('-m', '--music-file', type=str, help='Path to the background music file (mp3)', required=False)
-    parser.add_argument('-n', '--num-images', type=int, help='Number of images to be generated', default=5)
-    parser.add_argument('-o', '--output-file', type=str, help='Path for the output video file', default='vid_output.mp4')
+    parser.add_argument('-m', '--music-file', type=str, help='Path to the background music file (mp3)', default=settings.get('default_music_file'))
+    parser.add_argument('-n', '--num-images', type=int, help='Number of images to be generated', default=settings.get('default_num_images', 5))
+    parser.add_argument('-o', '--output-file', type=str, help='Path for the output video file', default=settings.get('default_output_file'))
 
     args = parser.parse_args()
     main(args)
