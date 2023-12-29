@@ -76,6 +76,10 @@ def perform_text_to_speech_transformation(text_file):
     except Exception as e:
         print(f"Error during Text-to-Speech transformation: {e}")
 
+def ask_user_for_image_generation():
+    response = input("Do you want to start the image generation process? [Y/n]: ").strip().lower()
+    return response in ['', 'y', 'yes']
+
 def main(args):
     text_file_available = False
     mp3_file_exists = False
@@ -111,6 +115,13 @@ def main(args):
 
     # Ensure the output folder exists
     os.makedirs(image_output_folder, exist_ok=True)
+
+    # Ask user for image generation
+    if ask_user_for_image_generation():
+        print_green_bold("Image generation process selected. Implement image generation logic here.")
+        # Implement image generation logic here
+    else:
+        print("Image generation process skipped.")
 
     # Rest of your main function logic
 
