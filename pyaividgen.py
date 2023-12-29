@@ -58,6 +58,24 @@ def ask_user_for_text_to_speech_transformation():
     response = input("Do you want to proceed with Text-to-Speech transformation? [Y/n]: ").strip().lower()
     return response in ['', 'y', 'yes']
 
+def perform_text_to_speech_transformation(text_file):
+    try:
+        with open(text_file, 'r') as file:
+            text = file.read()
+            
+            mp3_output_file = text_file.replace('.txt', '.mp3')
+            response = client.audio.speech.create(
+                model="tts-1",
+                voice="nova",
+                speed=0.75,
+                input=text
+            )
+            response.stream_to_file(mp3_output_file)
+            print_green_bold(f"Text-to-Speech output written to file {mp3_output_file}.")
+
+    except Exception as e:
+        print(f"Error during Text-to-Speech transformation: {e}")
+
 def main(args):
     text_file_available = False
 
@@ -77,8 +95,8 @@ def main(args):
 
     if text_file_available:
         if ask_user_for_text_to_speech_transformation():
-            print_green_bold("Text-to-Speech transformation selected. Implement transformation logic here.")
-            # Implement Text-to-Speech transformation logic here
+            print_green_bold("Text-to-Speech transformation selected.")
+            perform_text_to_speech_transformation(args.text_file)
         else:
             print("Text-to-Speech transformation skipped.")
 
