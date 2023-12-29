@@ -104,7 +104,14 @@ def main(args):
             perform_text_to_speech_transformation(args.text_file)
         else:
             print("Text-to-Speech transformation skipped.")
-            
+
+    # Image output folder handling
+    image_output_folder = args.image_output_folder if args.image_output_folder else settings.get('default_image_output_folder', 'image_output')
+    print_green_bold(f"Images will be saved in the folder: {image_output_folder}")
+
+    # Ensure the output folder exists
+    os.makedirs(image_output_folder, exist_ok=True)
+
     # Rest of your main function logic
 
 if __name__ == "__main__":
@@ -113,6 +120,7 @@ if __name__ == "__main__":
     parser.add_argument('-t', '--text-file', type=str, help='Path to the text file (txt) for voice conversion', required=False)
     parser.add_argument('-m', '--music-file', type=str, help='Path to the background music file (mp3)', default=settings.get('default_music_file'))
     parser.add_argument('-n', '--num-images', type=int, help='Number of images to be generated', default=settings.get('default_num_images', 5))
+    parser.add_argument('-i', '--image-output-folder', type=str, help='Path for the folder where images will be saved', default=settings.get('default_image_output_folder', 'image_output'))
     parser.add_argument('-o', '--output-file', type=str, help='Path for the output video file', default=settings.get('default_output_file'))
 
     args = parser.parse_args()
