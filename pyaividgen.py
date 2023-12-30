@@ -1,6 +1,8 @@
 import argparse
 import os
 import json
+import requests
+import shutil
 from openai import OpenAI
 import colorama
 from colorama import Fore, Style
@@ -99,6 +101,51 @@ def generate_image_prompts(text, num_prompts):
     
     return prompts
 
+def generate_and_save_images(prompts, image_output_folder):
+    # Empty the image output folder first
+    empty_directory(image_output_folder)
+   
+    for i, prompt in enumerate(prompts, 1):
+        try:
+            response = client.images.generate(
+                model="dall-e-3",
+                prompt=prompt,
+                size="1792x1024",
+                quality="hd",
+                n=1,
+            )
+            # Assuming the API returns the image URL
+            image_url = response.data[0].url
+
+            # Call download_image function
+            image_file_path = os.path.join(image_output_folder, f"image_{i}.png")
+            download_image(image_url, image_file_path)
+
+            print_green_bold(f"Image {i} generated and saved in {image_output_folder}")
+
+        except Exception as e:
+            print(f"Error during image generation for prompt {i}: {e}")
+
+def download_image(image_url, file_path):
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()
+
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+
+        print_green_bold(f"Image downloaded and saved to {file_path}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading image: {e}")
+
+def empty_directory(folder_path):
+    for item in os.listdir(folder_path):
+        item_path = os.path.join(folder_path, item)
+        if os.path.isfile(item_path):
+            os.remove(item_path)
+        elif os.path.isdir(item_path):
+            shutil.rmtree(item_path)
+
 def main(args):
     text_file_available = False
     mp3_file_exists = False
@@ -159,7 +206,8 @@ def main(args):
         for i, prompt in enumerate(image_prompts, 1):
             print(f"Prompt {i}: {prompt}")
         
-        # You can now use image_prompts array for further processing
+                # Generate and save images
+        generate_and_save_images(image_prompts, image_output_folder)
     else:
         print("Image generation process skipped.")
 
