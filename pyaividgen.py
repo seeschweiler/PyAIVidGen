@@ -80,9 +80,29 @@ def ask_user_for_image_generation():
     response = input("Do you want to start the image generation process? [Y/n]: ").strip().lower()
     return response in ['', 'y', 'yes']
 
+def generate_image_prompts(text, num_prompts):
+    prompts = []
+    try:
+        for _ in range(num_prompts):
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant who is able to generate perfect DallE 3 image generation prompts. Those prompts should be perfect for generating images to accompany the spoken text in a video. Please only output the prompt for the text the user is providing. Please do not include any further instructions or explainations in your answer, only the prompt text."},
+                    {"role": "user", "content": text}
+                ],
+                temperature=1.4
+            )
+            prompt = response.choices[0].message.content.strip()
+            prompts.append(prompt)
+    except Exception as e:
+        print(f"Error while generating image prompts with OpenAI: {e}")
+    
+    return prompts
+
 def main(args):
     text_file_available = False
     mp3_file_exists = False
+    text_output_file = args.text_file if args.text_file else settings.get('text_output_file', 'text_output.txt')
 
     if args.text_file:
         print_green_bold("Using provided text file.")
@@ -101,6 +121,8 @@ def main(args):
                 save_generated_text(generated_text)
                 args.text_file = settings.get('text_output_file', 'text_output.txt')
                 text_file_available = True
+        else:
+            print("Text generation skipped.")
 
     if text_file_available and not mp3_file_exists:
         if ask_user_for_text_to_speech_transformation():
@@ -118,8 +140,26 @@ def main(args):
 
     # Ask user for image generation
     if ask_user_for_image_generation():
-        print_green_bold("Image generation process selected. Implement image generation logic here.")
-        # Implement image generation logic here
+        print_green_bold("Image generation process selected.")
+
+        num_images = args.num_images if args.num_images else settings.get('default_num_images', 5)
+
+        # Read the text from the output file
+        try:
+            with open(text_output_file, 'r') as file:
+                text_content = file.read()
+        except FileNotFoundError:
+            print(f"Error: Text output file {text_output_file} not found.")
+            return
+
+        image_prompts = generate_image_prompts(text_content, num_images)
+        
+        # Output image prompts array to the console
+        print_green_bold("Generated Image Prompts:")
+        for i, prompt in enumerate(image_prompts, 1):
+            print(f"Prompt {i}: {prompt}")
+        
+        # You can now use image_prompts array for further processing
     else:
         print("Image generation process skipped.")
 
