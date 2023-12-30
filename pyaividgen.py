@@ -189,8 +189,12 @@ def main(args):
     if ask_user_for_image_generation():
         print_green_bold("Image generation process selected.")
 
-        num_images = args.num_images if args.num_images else settings.get('default_num_images', 5)
+        # Read the maximum number of images from settings
+        max_num_images = settings.get('max_num_images', 5)
 
+        # Determine the actual number of images to generate
+        num_images = min(args.num_images if args.num_images else settings.get('default_num_images', 5), max_num_images)
+        
         # Read the text from the output file
         try:
             with open(text_output_file, 'r') as file:
