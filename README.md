@@ -1,8 +1,9 @@
-# PyAIVidGen
-
 <img src="logo.png" align="left" height="200">
 
-PyAIVidGen is a sophisticated tool designed to leverage AI capabilities for generating YouTube videos. This program uniquely combines OpenAI's GPT-4 and DALL-E models to generate video scripts, voice narrations, and corresponding visual content.
+# PyAIVidGen
+
+
+**PyAIVidGen** is a sophisticated tool designed to leverage AI capabilities for generating YouTube videos. This program uniquely combines OpenAI's GPT-4 and DALL-E models to generate video scripts, voice narrations, and corresponding visual content.
 
 ## Features
 
