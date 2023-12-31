@@ -147,6 +147,16 @@ def empty_directory(folder_path):
             shutil.rmtree(item_path)
 
 def main(args):
+    # Determine the music file to use
+    music_file = args.music_file if args.music_file else settings.get('default_music_file')
+    
+    # Check if the music file exists
+    if music_file and os.path.exists(music_file):
+        print_green_bold(f"Background music file to be used: {music_file}")
+    else:
+        print("No background music file provided or file not found. No background music will be added to the video.")
+        music_file = None
+    
     text_file_available = False
     mp3_file_exists = False
     text_output_file = args.text_file if args.text_file else settings.get('text_output_file', 'text_output.txt')
@@ -194,7 +204,7 @@ def main(args):
 
         # Determine the actual number of images to generate
         num_images = min(args.num_images if args.num_images else settings.get('default_num_images', 5), max_num_images)
-        
+
         # Read the text from the output file
         try:
             with open(text_output_file, 'r') as file:
@@ -210,7 +220,7 @@ def main(args):
         for i, prompt in enumerate(image_prompts, 1):
             print(f"Prompt {i}: {prompt}")
         
-                # Generate and save images
+        # Generate and save images
         generate_and_save_images(image_prompts, image_output_folder)
     else:
         print("Image generation process skipped.")
