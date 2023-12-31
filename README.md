@@ -1,4 +1,4 @@
-<img src="logo.png" align="left" height="200">
+<img src="logo.png" align="left" height="150">
 
 # PyAIVidGen
 
