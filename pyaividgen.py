@@ -7,6 +7,7 @@ from openai import OpenAI
 import colorama
 from colorama import Fore, Style
 from dotenv import load_dotenv
+from moviepy.editor import ImageSequenceClip, AudioFileClip, CompositeAudioClip
 
 colorama.init(autoreset=True)
 load_dotenv()
@@ -146,6 +147,31 @@ def empty_directory(folder_path):
         elif os.path.isdir(item_path):
             shutil.rmtree(item_path)
 
+def ask_user_for_video_generation():
+    response = input("Do you want to start the video generation process? [Y/n]: ").strip().lower()
+    return response in ['', 'y', 'yes']
+
+def generate_video(images_folder, audio_file, music_file, output_file, total_duration):
+    # Load all images from the folder
+    image_files = [os.path.join(images_folder, f) for f in sorted(os.listdir(images_folder)) if f.endswith('.png')]
+    image_clip = ImageSequenceClip(image_files, durations=[total_duration / len(image_files)] * len(image_files))
+
+    # Load the voiceover audio
+    voice_clip = AudioFileClip(audio_file)
+
+    # Combine audio tracks if background music is available
+    if music_file:
+        music_clip = AudioFileClip(music_file).volumex(0.5)  # Reduce music volume
+        final_audio = CompositeAudioClip([voice_clip, music_clip.set_duration(voice_clip.duration)])
+    else:
+        final_audio = voice_clip
+
+    # Set the audio to the video
+    final_video = image_clip.set_audio(final_audio)
+
+    # Write the final video file
+    final_video.write_videofile(output_file, fps=24)
+
 def main(args):
     # Determine the music file to use
     music_file = args.music_file if args.music_file else settings.get('default_music_file')
@@ -224,6 +250,25 @@ def main(args):
         generate_and_save_images(image_prompts, image_output_folder)
     else:
         print("Image generation process skipped.")
+
+    # Ask user if video generation should be started
+    if ask_user_for_video_generation():
+        print_green_bold("Video generation process selected.")
+
+        # Determine the video output file
+        video_output_file = args.output_file if args.output_file else settings.get('default_output_file')
+        if video_output_file:
+            print_green_bold(f"Video output file to be used: {video_output_file}")
+            # Implement video generation logic here
+        else:
+            print("No video output file specified. Ending program.")
+            return
+
+        # Video generation
+        if text_file_available and mp3_file_exists:
+            generate_video(image_output_folder, mp3_output_file, music_file, video_output_file, AudioFileClip(mp3_output_file).duration)
+    else:
+        print("Video generation process skipped.")
 
     # Rest of your main function logic
 
