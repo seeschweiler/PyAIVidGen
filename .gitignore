@@ -1,2 +1,4 @@
 .env
 text_output.txt
+./image_output
+*.mp3
