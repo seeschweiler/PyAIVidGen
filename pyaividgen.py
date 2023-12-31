@@ -7,7 +7,7 @@ from openai import OpenAI
 import colorama
 from colorama import Fore, Style
 from dotenv import load_dotenv
-from moviepy.editor import ImageSequenceClip, AudioFileClip, CompositeAudioClip
+from moviepy.editor import ImageClip, concatenate_audioclips, concatenate_videoclips, AudioFileClip, CompositeAudioClip, AudioClip
 
 colorama.init(autoreset=True)
 load_dotenv()
@@ -151,23 +151,54 @@ def ask_user_for_video_generation():
     response = input("Do you want to start the video generation process? [Y/n]: ").strip().lower()
     return response in ['', 'y', 'yes']
 
-def generate_video(images_folder, audio_file, music_file, output_file, total_duration):
-    # Load all images from the folder
+def create_animated_clip(img_path, duration, zoom_intensity):
+    # Create a clip from an image with zoom-in and zoom-out effect
+    clip = ImageClip(img_path).resize(height=1080)  # Resize for consistency
+    clip = clip.set_duration(duration)
+
+    # Define zoom-in and zoom-out effects
+    zoom_factor = 1 + zoom_intensity
+    zoom_in = lambda t: min(1 + zoom_intensity * (t / (duration / 2)), zoom_factor) if t < duration / 2 else zoom_factor
+    zoom_out = lambda t: zoom_factor if t < duration / 2 else max(zoom_factor - zoom_intensity * ((t - duration / 2) / (duration / 2)), 1)
+
+    # Apply zoom-in and zoom-out effect
+    clip = clip.fl_time(lambda t: zoom_in(t) if t < duration / 2 else zoom_out(t))
+    clip = clip.resize(lambda t: zoom_in(t) if t < duration / 2 else zoom_out(t))
+
+    return clip
+
+def generate_video(images_folder, audio_file, music_file, output_file, total_duration, zoom_intensity, transition_time):
+    # Load all images and create animated clips
     image_files = [os.path.join(images_folder, f) for f in sorted(os.listdir(images_folder)) if f.endswith('.png')]
-    image_clip = ImageSequenceClip(image_files, durations=[total_duration / len(image_files)] * len(image_files))
+    duration_per_image = total_duration / len(image_files)
+    clips = [create_animated_clip(img, duration_per_image, zoom_intensity) for img in image_files]
+
+    # Apply crossfade transition between clips
+    final_clips = [clips[0]]
+    for clip in clips[1:]:
+        final_clips.append(clip.crossfadein(transition_time))
+
+    # Concatenate all clips together
+    video_clip = concatenate_videoclips(final_clips, method="compose")
 
     # Load the voiceover audio
-    voice_clip = AudioFileClip(audio_file)
+    voice_clip = AudioFileClip(audio_file).audio_fadein(1).audio_fadeout(1)
+
+    # Create a silent audio clip for padding
+    silence = AudioClip(lambda t: 0, duration=5, fps=44100)
+
+    # Combine voice clip with silence padding
+    padded_voice_clip = concatenate_audioclips([silence, voice_clip, silence])
 
     # Combine audio tracks if background music is available
     if music_file:
         music_clip = AudioFileClip(music_file).volumex(0.5)  # Reduce music volume
-        final_audio = CompositeAudioClip([voice_clip, music_clip.set_duration(voice_clip.duration)])
+        final_audio = CompositeAudioClip([padded_voice_clip, music_clip.set_duration(video_clip.duration)])
     else:
-        final_audio = voice_clip
+        final_audio = padded_voice_clip
 
     # Set the audio to the video
-    final_video = image_clip.set_audio(final_audio)
+    final_video = video_clip.set_audio(final_audio)
 
     # Write the final video file
     final_video.write_videofile(output_file, fps=24)
@@ -259,14 +290,18 @@ def main(args):
         video_output_file = args.output_file if args.output_file else settings.get('default_output_file')
         if video_output_file:
             print_green_bold(f"Video output file to be used: {video_output_file}")
-            # Implement video generation logic here
         else:
             print("No video output file specified. Ending program.")
             return
+        
+        # Read zoom intensity and transition time from settings
+        zoom_intensity = settings.get('zoom_intensity', 0.05)  # Default value if not specified
+        transition_time = settings.get('transition_time', 1)   # Default value if not specified
 
         # Video generation
         if text_file_available and mp3_file_exists:
-            generate_video(image_output_folder, mp3_output_file, music_file, video_output_file, AudioFileClip(mp3_output_file).duration)
+            generate_video(image_output_folder, mp3_output_file, music_file, video_output_file, AudioFileClip(mp3_output_file).duration, zoom_intensity, transition_time)
+
     else:
         print("Video generation process skipped.")
 

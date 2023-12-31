@@ -5,5 +5,7 @@
     "default_output_file": "vid_output.mp4",
     "default_music_file": "music.mp3",
     "default_image_output_folder": "image_output",
-    "text_output_file": "custom_text_output.txt"
+    "text_output_file": "custom_text_output.txt",
+    "zoom_intensity": 0.2,
+    "transition_time": 3
 }
