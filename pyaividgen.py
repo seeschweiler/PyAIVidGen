@@ -90,7 +90,7 @@ def generate_image_prompts(text, num_prompts):
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant who is able to generate perfect DallE 3 image generation prompts. Those prompts should be perfect for generating images to accompany the spoken text in a video. Please only output the prompt for the text the user is providing. Please do not include any further instructions or explainations in your answer, only the prompt text. It is important that the prompt is able to generate photorealistic images showing just one scene and which do not contain any written text or numbers."},
+                    {"role": "system", "content": "You are a helpful assistant who is able to generate perfect DallE 3 image generation prompts. Those prompts should be perfect for generating images to accompany the spoken text in a video. Please only output the prompt for the text the user is providing. Please do not include any further instructions or explainations in your answer, only the prompt text."},
                     {"role": "user", "content": text}
                 ],
                 temperature=1.4
@@ -112,7 +112,7 @@ def generate_and_save_images(prompts, image_output_folder):
                 model="dall-e-3",
                 prompt=prompt,
                 size="1792x1024",
-                quality="hd",
+                quality="standard",
                 n=1,
             )
             # Assuming the API returns the image URL
