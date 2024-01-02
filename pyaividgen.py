@@ -216,32 +216,37 @@ def main(args):
     
     text_file_available = False
     mp3_file_exists = False
+
+    # Determine the text output file
     text_output_file = args.text_file if args.text_file else settings.get('text_output_file', 'text_output.txt')
 
-    if args.text_file:
-        print_green_bold("Using provided text file.")
+    # Check if the text file exists
+    if os.path.exists(text_output_file):
+        print_green_bold(f"Using existing text file: {text_output_file}")
         text_file_available = True
-
-        # Check if corresponding MP3 file exists
-        mp3_output_file = args.text_file.replace('.txt', '.mp3')
-        if os.path.exists(mp3_output_file):
-            print_green_bold(f"Corresponding voice MP3 file found: {mp3_output_file}. It will be used.")
-            mp3_file_exists = True
     else:
         if ask_user_for_text_generation():
             print_green_bold("Generating text using OpenAI.")
             generated_text = generate_text_with_openai()
             if generated_text:
                 save_generated_text(generated_text)
-                args.text_file = settings.get('text_output_file', 'text_output.txt')
                 text_file_available = True
         else:
             print("Text generation skipped.")
+    
 
-    if text_file_available and not mp3_file_exists:
+    # Check if corresponding MP3 file exists or generate new MP3
+    mp3_output_file = text_output_file.replace('.txt', '.mp3')
+    
+    # Check if the MP3 file exists
+    if os.path.exists(mp3_output_file):
+        print_green_bold(f"Corresponding voice MP3 file found: {mp3_output_file}. It will be used.")
+        mp3_file_exists = True
+    elif text_file_available:
         if ask_user_for_text_to_speech_transformation():
             print_green_bold("Text-to-Speech transformation selected.")
-            perform_text_to_speech_transformation(args.text_file)
+            perform_text_to_speech_transformation(text_output_file)
+            mp3_file_exists = True
         else:
             print("Text-to-Speech transformation skipped.")
 
