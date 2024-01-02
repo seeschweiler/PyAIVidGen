@@ -293,15 +293,22 @@ def main(args):
         else:
             print("No video output file specified. Ending program.")
             return
-        
+
+        print(f"Text File Available: {text_file_available}, MP3 File Exists: {mp3_file_exists}")
+
         # Read zoom intensity and transition time from settings
         zoom_intensity = settings.get('zoom_intensity', 0.05)  # Default value if not specified
         transition_time = settings.get('transition_time', 1)   # Default value if not specified
 
         # Video generation
         if text_file_available and mp3_file_exists:
-            generate_video(image_output_folder, mp3_output_file, music_file, video_output_file, AudioFileClip(mp3_output_file).duration, zoom_intensity, transition_time)
-
+            try:
+                generate_video(image_output_folder, mp3_output_file, music_file, video_output_file, AudioFileClip(mp3_output_file).duration, zoom_intensity, transition_time)
+                print("Video generation completed successfully.")
+            except Exception as e:
+                print(f"Error during video generation: {e}")
+        else:
+            print("Skipping video generation due to missing text or MP3 file.")
     else:
         print("Video generation process skipped.")
 
