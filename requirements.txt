@@ -3,3 +3,6 @@ colorama==0.4.4
 requests==2.25.1
 moviepy==1.0.3
 python-dotenv==1.0.0
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2

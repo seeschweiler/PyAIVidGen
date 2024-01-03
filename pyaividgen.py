@@ -9,6 +9,8 @@ from colorama import Fore, Style
 from dotenv import load_dotenv
 from moviepy.editor import ImageClip, concatenate_audioclips, concatenate_videoclips, AudioFileClip, CompositeAudioClip, AudioClip
 
+from youtube_uploader import upload_video
+
 colorama.init(autoreset=True)
 load_dotenv()
 
@@ -203,6 +205,10 @@ def generate_video(images_folder, audio_file, music_file, output_file, total_dur
     # Write the final video file
     final_video.write_videofile(output_file, fps=24)
 
+def ask_user_for_youtube_upload():
+    response = input("Do you want to automatically upload the generated video to YouTube? [Y/n]: ").strip().lower()
+    return response in ['', 'y', 'yes']
+
 def main(args):
     # Determine the music file to use
     music_file = args.music_file if args.music_file else settings.get('default_music_file')
@@ -310,6 +316,21 @@ def main(args):
             try:
                 generate_video(image_output_folder, mp3_output_file, music_file, video_output_file, AudioFileClip(mp3_output_file).duration, zoom_intensity, transition_time)
                 print("Video generation completed successfully.")
+
+                if ask_user_for_youtube_upload():
+                    print_green_bold("Uploading to YouTube...")
+                    # Define video details
+                    title = "Your Video Title"
+                    description = "Description of your video"
+                    category = "22"  # Category ID (e.g., "22" for People & Blogs)
+                    tags = ["PyAIVidGen", "AI Video"]
+
+                    # Perform upload
+                    upload_response = upload_video(video_output_file, title, description, category, tags)
+                    print_green_bold(f"Video uploaded successfully: {upload_response.get('id')}")
+                else:
+                    print("Automatic YouTube upload skipped.")
+
             except Exception as e:
                 print(f"Error during video generation: {e}")
         else:
