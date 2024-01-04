@@ -209,6 +209,20 @@ def ask_user_for_youtube_upload():
     response = input("Do you want to automatically upload the generated video to YouTube? [Y/n]: ").strip().lower()
     return response in ['', 'y', 'yes']
 
+# Function to handle YouTube video upload
+def upload_video_to_youtube(video_file_path):
+    print_green_bold("Uploading to YouTube...")
+    # Define video details
+    title = "Your Video Title"
+    description = "Description of your video"
+    category = "22"  # Category ID (e.g., "22" for People & Blogs)
+    tags = ["PyAIVidGen", "AI Video"]
+
+    # Perform upload
+    upload_response = upload_video(video_file_path, title, description, category, tags)
+    print_green_bold(f"Video uploaded successfully: {upload_response.get('id')}")
+
+
 def main(args):
     # Determine the music file to use
     music_file = args.music_file if args.music_file else settings.get('default_music_file')
@@ -318,16 +332,7 @@ def main(args):
                 print("Video generation completed successfully.")
 
                 if ask_user_for_youtube_upload():
-                    print_green_bold("Uploading to YouTube...")
-                    # Define video details
-                    title = "Your Video Title"
-                    description = "Description of your video"
-                    category = "22"  # Category ID (e.g., "22" for People & Blogs)
-                    tags = ["PyAIVidGen", "AI Video"]
-
-                    # Perform upload
-                    upload_response = upload_video(video_output_file, title, description, category, tags)
-                    print_green_bold(f"Video uploaded successfully: {upload_response.get('id')}")
+                    upload_video_to_youtube(video_output_file)
                 else:
                     print("Automatic YouTube upload skipped.")
 
@@ -336,7 +341,16 @@ def main(args):
         else:
             print("Skipping video generation due to missing text or MP3 file.")
     else:
-        print("Video generation process skipped.")
+        # Check if the video file exists for YouTube upload
+        video_output_file = args.output_file if args.output_file else settings.get('default_output_file')
+        if os.path.exists(video_output_file):
+            print_green_bold(f"Found existing video file: {video_output_file}")
+            if ask_user_for_youtube_upload():
+                upload_video_to_youtube(video_output_file)
+            else:
+                print("Automatic YouTube upload skipped.")
+        else:
+            print("No existing video file found. Ending program.")
 
     # Rest of your main function logic
 
