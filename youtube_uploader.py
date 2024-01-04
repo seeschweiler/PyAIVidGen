@@ -13,6 +13,7 @@ def get_authenticated_service():
         print("Loading Credentials From File...")
         with open('token.pickle', 'rb') as token:
             credentials = pickle.load(token)
+            print("Crendentials loaded.")
 
     # If there are no valid credentials available, then either refresh the token or log in.
     if not credentials or not credentials.valid:
@@ -56,6 +57,7 @@ def upload_video(file_path, title, description, category, tags):
 
     mediaFile = MediaFileUpload(file_path)
 
+    print("Performing upload now ... please wait.")
     response_upload = youtube.videos().insert(
         part='snippet,status',
         body=request_body,
