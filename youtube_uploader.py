@@ -66,5 +66,3 @@ def upload_video(file_path, title, description, category, tags):
 
     return response_upload
 
-# Example Usage:
-# upload_video('path_to_video.mp4', 'My Video Title', 'This is a description', '22', ['tag1', 'tag2'])

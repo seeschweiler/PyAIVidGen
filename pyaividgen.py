@@ -209,19 +209,59 @@ def ask_user_for_youtube_upload():
     response = input("Do you want to automatically upload the generated video to YouTube? [Y/n]: ").strip().lower()
     return response in ['', 'y', 'yes']
 
-# Function to handle YouTube video upload
+# Function to handle preparation for YouTube video upload
 def upload_video_to_youtube(video_file_path):
+    generate_video_details = ask_for_video_details_generation()
+    video_details_file = settings.get('video_details_file', 'video_details.json')
+
+    if generate_video_details:
+        # Generate video details (title, description, keywords)
+        print("Generating video details ... ")
+        title = "Generated Video Title"
+        description = "Generated video description."
+        keywords = ["Generated", "Video", "Keywords"]
+        print("Video details generated.")
+    elif os.path.exists(video_details_file):
+        # Read video details from file
+        print(f"Trying to retrieve video details from file {video_details_file}")
+        video_details = read_video_details(video_details_file)
+        title = video_details.get('title', 'Default Title')
+        description = video_details.get('description', 'Default Description')
+        keywords = video_details.get('keywords', ['Default', 'Keywords'])
+        print("Video details retrieved successfully.")
+    else:
+        # Use default video details
+        print("Use default video details ... ")
+        title = "Default Video Title"
+        description = "Default video description."
+        keywords = ["Default", "Video", "Keywords"]
+        print("Default video details set.")
+
+    print("-------------------------------")
+    print(f"- Video Details - Title: {title}")
+    print(f"- Video Details - Description: {description}")
+    print(f"- Video Details - Keywords: {keywords}")
+    print("-------------------------------")
+
     print_green_bold("Uploading to YouTube...")
-    # Define video details
-    title = "Your Video Title"
-    description = "Description of your video"
     category = "22"  # Category ID (e.g., "22" for People & Blogs)
-    tags = ["PyAIVidGen", "AI Video"]
+    tags = keywords
 
     # Perform upload
     upload_response = upload_video(video_file_path, title, description, category, tags)
     print_green_bold(f"Video uploaded successfully: {upload_response.get('id')}")
 
+def ask_for_video_details_generation():
+    response = input("Do you want to generate video title, description, and keywords? [Y/n]: ").strip().lower()
+    return response in ['', 'y', 'yes']
+
+def read_video_details(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except Exception as e:
+        print(f"Error reading video details file: {e}")
+        return None
 
 def main(args):
     # Determine the music file to use
@@ -362,6 +402,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--num-images', type=int, help='Number of images to be generated', default=settings.get('default_num_images', 5))
     parser.add_argument('-i', '--image-output-folder', type=str, help='Path for the folder where images will be saved', default=settings.get('default_image_output_folder', 'image_output'))
     parser.add_argument('-o', '--output-file', type=str, help='Path for the output video file', default=settings.get('default_output_file'))
+    parser.add_argument('-v', '--video-details-file', type=str, help='Path to the video details JSON file', required=False)
 
     args = parser.parse_args()
     main(args)
