@@ -212,7 +212,7 @@ def ask_user_for_youtube_upload():
 # Function to handle preparation for YouTube video upload
 def upload_video_to_youtube(video_file_path):
     generate_video_details = ask_for_video_details_generation()
-    video_details_file = settings.get('video_details_file', 'video_details.json')
+    video_details_file = args.video_details_file if args.video_details_file else settings.get('video_details_file', 'video_details.json')
 
     if generate_video_details:
         # Generate video details (title, description, keywords)
