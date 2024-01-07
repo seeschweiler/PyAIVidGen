@@ -7,3 +7,4 @@ token.pickle
 client_secret.json
 video_details.json
 __pycache__
+custom_text_output.txt

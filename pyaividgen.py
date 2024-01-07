@@ -39,7 +39,7 @@ if settings is None:
 def generate_text_with_openai():
     user_message = settings.get('user_message', '')
     try:
-        response = client.chat.completions.create(model="gpt-4",
+        response = client.chat.completions.create(model="gpt-4-1106-preview",
         messages=[
             {"role": "system", "content": "You are a helpful assistant which is able to generate guided meditations as text."},
             {"role": "user", "content": user_message}
@@ -90,9 +90,9 @@ def generate_image_prompts(text, num_prompts):
     try:
         for _ in range(num_prompts):
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4-1106-preview",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant who is able to generate perfect DallE 3 image generation prompts. Those prompts should be perfect for generating images to accompany the spoken text in a video. Please only output the prompt for the text the user is providing. Please do not include any further instructions or explainations in your answer, only the prompt text."},
+                    {"role": "system", "content": "You are a helpful assistant who is able to generate perfect DallE 3 image generation prompts. Those prompts should be perfect for generating images to accompany the spoken text in a video. Images must not contain any humans or animals. Images must also not contain any writing. Please only output the prompt for the text the user is providing. Please do not include any further instructions or explainations in your answer, only the prompt text."},
                     {"role": "user", "content": text}
                 ],
                 temperature=1.4
@@ -114,7 +114,7 @@ def generate_and_save_images(prompts, image_output_folder):
                 model="dall-e-3",
                 prompt=prompt,
                 size="1792x1024",
-                quality="standard",
+                quality="hd",
                 n=1,
             )
             # Assuming the API returns the image URL
