@@ -210,17 +210,58 @@ def ask_user_for_youtube_upload():
     return response in ['', 'y', 'yes']
 
 # Function to handle preparation for YouTube video upload
-def upload_video_to_youtube(video_file_path):
+def upload_video_to_youtube(video_file_path, video_text):
     generate_video_details = ask_for_video_details_generation()
     video_details_file = args.video_details_file if args.video_details_file else settings.get('video_details_file', 'video_details.json')
 
     if generate_video_details:
         # Generate video details (title, description, keywords)
-        print("Generating video details ... ")
-        title = "Generated Video Title"
-        description = "Generated video description."
-        keywords = ["Generated", "Video", "Keywords"]
-        print("Video details generated.")
+        # Use OpenAI Chat Completion API to generate video details
+        try:
+            system_message = "You are an assistant which is able to generate for a given text of a YouTube video great seo-optimized and engaging video title (title), video description (description) and keywords (keywords). Please output in JSON format only."
+
+            completion = client.chat.completions.create(
+                model="gpt-3.5-turbo-1106",
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": video_text}
+                ],
+                response_format={"type": "json_object"}
+            )
+
+            video_details_str = completion.choices[0].message.content
+            video_details = json.loads(video_details_str)  # Converting string to JSON object
+
+            if 'title' in video_details and 'description' in video_details and 'keywords' in video_details:
+                # Convert comma-separated keywords string to a list
+                keywords_list = [keyword.strip() for keyword in video_details['keywords'].split(',')]
+
+                # Update the video_details with the list of keywords
+                video_details['keywords'] = keywords_list
+
+                # Write updated video details to the file
+                with open(video_details_file, 'w') as file:
+                    json.dump(video_details, file, indent=4)
+
+                print(f"New video details written to {video_details_file}")
+
+                title = video_details['title']
+                description = video_details['description']
+                keywords = video_details['keywords']
+
+                print("Video details generated.")
+            else:
+                print("Error: Received invalid video details format.")
+                print("Use default video details ... ")
+                title = "Default Video Title"
+                description = "Default video description."
+                keywords = ["Default", "Video", "Keywords"]
+                print("Default video details set.")
+        
+        except Exception as e:
+            print(f"Error generating video details: {e}")
+
+        
     elif os.path.exists(video_details_file):
         # Read video details from file
         print(f"Trying to retrieve video details from file {video_details_file}")
@@ -372,7 +413,14 @@ def main(args):
                 print("Video generation completed successfully.")
 
                 if ask_user_for_youtube_upload():
-                    upload_video_to_youtube(video_output_file)
+                    # Read the text from the output file
+                    try:
+                        with open(text_output_file, 'r') as file:
+                            text_content = file.read()
+                            upload_video_to_youtube(video_output_file, text_content)
+                    except FileNotFoundError:
+                        print(f"Error: Text output file {text_output_file} not found.")
+                        return
                 else:
                     print("Automatic YouTube upload skipped.")
 
@@ -386,7 +434,14 @@ def main(args):
         if os.path.exists(video_output_file):
             print_green_bold(f"Found existing video file: {video_output_file}")
             if ask_user_for_youtube_upload():
-                upload_video_to_youtube(video_output_file)
+                # Read the text from the output file
+                try:
+                    with open(text_output_file, 'r') as file:
+                        text_content = file.read()
+                        upload_video_to_youtube(video_output_file, text_content)
+                except FileNotFoundError:
+                    print(f"Error: Text output file {text_output_file} not found.")
+                    return
             else:
                 print("Automatic YouTube upload skipped.")
         else:

@@ -5,3 +5,5 @@ image_output
 *.mp4
 token.pickle
 client_secret.json
+video_details.json
+
