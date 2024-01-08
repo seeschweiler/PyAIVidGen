@@ -46,8 +46,6 @@ To run PyAIVidGen, you need to set up your OpenAI API key in an `.env` file. Thi
 
 This `.env` file will be automatically read by PyAIVidGen to authenticate API requests.
 
----
-
 ## Setting Up YouTube API Access
 
 To enable the YouTube upload functionality in PyAIVidGen, you need to set up a `client_secret.json` file. This file contains the credentials required to authenticate with the YouTube Data API. Here are the steps to configure this file:
